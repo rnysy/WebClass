@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script>
+        let UserId;
+        let PostId, PostUserId;
+
+        function UserCreate() {
+            let User = {
+                "account": $("#account").val(),
+                "password": $("#password").val(),
+                "name": $("#name").val(),
+                "email": $("#email").val(),
+                "phone": $("#phone").val(),
+                "profilePath": $("#image").val()
+            };
+            $.ajax({
+                type: "POST",
+                url: "/user/create",
+                data: JSON.stringify(User),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function(response) {
+                    console.log("회원 가입 성공", response);
+                    UserId = response.data.id;
+                    $(".register").hide();
+
+                },
+                error: function(request, status, error) {
+                    console.log("회원 가입 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function UserRead() {
+            $.ajax({
+                type: "GET",
+                url: "/user/read/" + UserId,
+                success: function(response) {
+                    console.log("정보 읽기 성공");
+                    $("#id").text(UserId);
+                    $("#UserId").text(response.data.account);
+                    $("#UserName").text(response.data.name);
+                    $("#UserEmail").text(response.data.email);
+                    $("#UserPhone").text(response.data.phone);
+                },
+                error: function(request, status, error) {
+                    console.log("정보 읽기 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function UserReadAll() {
+            $.ajax({
+                type: "GET",
+                url: "/user/read",
+                success: function(response) {
+                    console.log("정보 모두 읽기 성공", response);
+                    for (var i = 0; i < response.data.length; i++) {
+                        $(".UserAll").append(
+                            "<p> id    : " + response.data[i].account + "</p>" +
+                            "<p> name  : " + response.data[i].name + "</p>" +
+                            "<p> email : " + response.data[i].email + "</p>" +
+                            "<p> phone : " + response.data[i].phone + "</p>");
+                    }
+                },
+                error: function(request, status, error) {
+                    console.log("정보 모두 읽기 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function UserUpdate() {
+            let UpdateData = {
+                "name": prompt("이름: ", ''),
+                "email": prompt("이메일: ", ''),
+                "phone": prompt("폰 번호: ", ''),
+            };
+            $.ajax({
+                type: "PUT",
+                url: "/user/update/" + UserId,
+                data: JSON.stringify(UpdateData),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function(response) {
+                    console.log("정보 수정 성공", response);
+                },
+                error: function(request, status, error) {
+                    console.log("정보 수정 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function UserRemove() {
+            let Remove = confirm('정말로 이 계정을 삭제 하시겠습니까?');
+            if (Remove) {
+                $.ajax({
+                    type: "DELETE",
+                    url: "/user/delete/" + UserId,
+                    success: function(response) {
+                        console.log("계정 삭제 완료", response);
+                    },
+                    error: function(request, status, error) {
+                        console.log("계정 삭제 실패");
+                        console.log("code:" + request.status + "\n" + "message:" + request
+                            .responseText +
+                            "\n" + "error:" + error);
+                    }
+                });
+            }
+        }
+
+        function PostReadAll() {
+            $.ajax({
+                type: "GET",
+                url: "/post/read",
+                success: function(response) {
+                    console.log("글 모두 읽기 성공", response);
+                    for (var i = 0; i < response.data.length; i++) {
+                        $("#AllPost").append(
+                            "<li>" +
+                            "<p>게시물 아이디 : " + response.data[i].id + "</p>" +
+                            "<p>게시물 유저 아이디 : " + response.data[i].userId + "</p>" +
+                            "<p>게시물 제목 : " + response.data[i].title + "</p>" +
+                            "<p>게시물 내용 : " + response.data[i].content + "</p>" +
+                            "</li>");
+                    };
+                },
+                error: function(request, status, error) {
+                    console.log("글 모두 읽기 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function PostRead() {
+            $.ajax({
+                type: "GET",
+                url: "/post/read/" + UserId,
+                data: "data",
+                dataType: "dataType",
+                success: function(response) {
+                    console.log("글 읽기 성공", response);
+                    $("#UserPostTitle").text(response.data.title);
+                    $("#UserPostContent").text(response.data.content);
+                },
+                error: function(request, status, error) {
+                    console.log("글 읽기 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function PostCreate() {
+            let Post = {
+                "title": $("#title").val(),
+                "content": $("#content").val(),
+                "userId": UserId,
+                "pictures": null
+            };
+            $.ajax({
+                type: "POST",
+                url: "/post/create",
+                data: JSON.stringify(Post),
+                contentType: "application/json",
+                dataType: 'json',
+                success: function(response) {
+                    console.log("글 생성 성공", response);
+                    PostId = response.data.id;
+                    PostUserId = response.data.userId;
+                    $("#title").val('');
+                    $("#content").val('');
+                },
+                error: function(request, status, error) {
+                    console.log("글 생성 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function PostRemove() {
+            $.ajax({
+                type: "DELETE",
+                url: "/post/delete/" + UserId,
+                success: function(response) {
+                    console.log("글 삭제 완료", response);
+                },
+                error: function(request, status, error) {
+                    console.log("글 삭제 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+
+        function PostUpdate() {
+            let PostUpdate = {
+                "title": $("#PostUpdateTitle").val(),
+                "content": $("#PostUpdateContent").val()
+            };
+            $.ajax({
+                type: "PUT",
+                url: "/post/update/" + UserId,
+                contentType: "application/json",
+                dataType: 'json',
+                data: JSON.stringify(PostUpdate),
+                success: function(response) {
+                    console.log("글 수정 성공", response);
+                },
+                error: function(request, status, error) {
+                    console.log("글 수정 실패");
+                    console.log("code:" + request.status + "\n" + "message:" + request
+                        .responseText +
+                        "\n" + "error:" + error);
+                }
+            });
+        }
+    </script>
+</head>
+
+<body>
+    <h1>웹프</h1>
+    <div class="register">
+        <h2>회원가입</h2>
+        <div>
+            <span>아이디:</span>
+            <input type="text" id="account" placeholder="아이디">
+            <br>
+        </div>
+        <div>
+            <span>비밀번호:</span>
+            <input type="text" id="password" placeholder="비밀번호">
+            <br>
+        </div>
+        <div>
+            <span>이름:</span>
+            <input type="text" id="name" placeholder="계정이름">
+            <br>
+        </div>
+        <div>
+            <span>이메일:</span>
+            <input type="text" id="email" placeholder="이메일주소">
+            <br>
+        </div>
+        <div>
+            <span>전화번호:</span>
+            <input type="text" id="phone" placeholder="전화번호">
+            <br>
+        </div>
+        <input type="file" id="image">
+        <br>
+        <button onclick="UserCreate()">Register</button>
+    </div>
+    <button onclick="UserRead()" class="Userinfo">UserInfo</button>
+    <div class="registerdetail">
+        <h2>회원정보수정</h2>
+        <ul>
+            <span>로그인중 :</span>
+            <span id="id"> </span>
+            <h2>내 정보</h2>
+            <li>
+                <span>아이디 : </span>
+                <span id="UserId"></span>
+            </li>
+            <li>
+                <span>계정이름 : </span>
+                <span id="UserName"></span>
+            </li>
+            <li>
+                <span>이메일 : </span>
+                <span id="UserEmail"></span>
+            </li>
+            <li>
+                <span>전화번호 : </span>
+                <span id="UserPhone"></span>
+            </li>
+        </ul>
+        <div class="UserAll">
+            <h3>회원 목록</h3>
+        </div>
+        <button onclick="UserUpdate()">계정 수정</button>
+        <button onclick="UserRemove()">계정 삭제</button>
+        <button onclick="UserReadAll()">회원 목록 보기</button>
+        <br>
+        <button onclick="PostReadAll()">게시물 보기</button>
+        <div class="Post">
+            <ul id="AllPost">
+            </ul>
+            <div>
+                <h2>사용자 글 조회</h2>
+                <p id="UserPostTitle"></p>
+                <p id="UserPostContent"></p>
+            </div>
+            <div class="PostCreate">
+                <span id="PostId"></span>
+                <span>제목 : </span>
+                <input type="text" id="title" placeholder="제목">
+                <span>내용 : </span>
+                <textarea id="content" placeholder="내용"></textarea>
+            </div>
+            <button onclick="PostCreate()">글 생성</button>
+
+            <div>
+                <h2>게시물 수정</h2>
+                <button onclick="PostRead()">내 글 읽기</button>
+                <p id="PostUpdateTitle"></p>
+                <p id="PostUpdateContent"></p>
+                <button onclick="PostUpdate()">글 수정</button>
+                <button onclick="PostRemove()">글 삭제</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
